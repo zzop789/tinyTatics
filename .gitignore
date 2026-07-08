@@ -24,6 +24,7 @@ lib/
 # Dependency caches / local packages
 _deps/
 .vcpkg/
+3rd_party/
 ThirdParty/
 
 # IDE / editor local state

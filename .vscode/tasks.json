@@ -4,13 +4,15 @@
     {
       "label": "CMake: configure",
       "type": "shell",
-      "command": "cmake --preset default",
+      "command": "cmake",
+      "args": ["--preset", "default"],
       "problemMatcher": []
     },
     {
       "label": "CMake: build",
       "type": "shell",
-      "command": "cmake --build --preset default",
+      "command": "cmake",
+      "args": ["--build", "--preset", "default"],
       "dependsOn": "CMake: configure",
       "group": {
         "kind": "build",

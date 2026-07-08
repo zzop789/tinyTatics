@@ -9,6 +9,24 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
 
+set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/3rd_party" CACHE PATH "FetchContent dependency directory" FORCE)
+
+function(tiny_collect_sources output_variable root_directory)
+    # Flow: target source root -> recursive source list -> Engine/Sandbox target.
+    # Jump: new folders under this root are picked up after CMake reconfigures.
+    file(GLOB_RECURSE collected_sources CONFIGURE_DEPENDS
+        "${root_directory}/*.c"
+        "${root_directory}/*.cc"
+        "${root_directory}/*.cpp"
+        "${root_directory}/*.cxx"
+        "${root_directory}/*.h"
+        "${root_directory}/*.hh"
+        "${root_directory}/*.hpp"
+        "${root_directory}/*.inl")
+
+    set(${output_variable} ${collected_sources} PARENT_SCOPE)
+endfunction()
+
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -64,13 +82,26 @@ target_include_directories(imgui PUBLIC
 target_link_libraries(imgui PUBLIC glfw glad_gl_core_33)
 target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
-add_executable(TinyTacticsSandbox src/Sandbox/main.cpp)
-target_link_libraries(TinyTacticsSandbox PRIVATE
+tiny_collect_sources(TINY_TACTICS_ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Engine")
+
+add_library(TinyTacticsEngine STATIC ${TINY_TACTICS_ENGINE_SOURCES})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src/Engine" PREFIX "Engine" FILES ${TINY_TACTICS_ENGINE_SOURCES})
+target_include_directories(TinyTacticsEngine PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/src")
+target_link_libraries(TinyTacticsEngine PUBLIC
     glfw
     glad_gl_core_33
     glm::glm
     stb
     imgui
     nlohmann_json::nlohmann_json)
+target_compile_definitions(TinyTacticsEngine PUBLIC GLFW_INCLUDE_NONE)
 
-target_compile_definitions(TinyTacticsSandbox PRIVATE GLFW_INCLUDE_NONE)
+tiny_collect_sources(TINY_TACTICS_SANDBOX_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Sandbox")
+
+add_executable(TinyTacticsSandbox ${TINY_TACTICS_SANDBOX_SOURCES})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src/Sandbox" PREFIX "Sandbox" FILES ${TINY_TACTICS_SANDBOX_SOURCES})
+target_include_directories(TinyTacticsSandbox PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Sandbox")
+target_link_libraries(TinyTacticsSandbox PRIVATE TinyTacticsEngine)
