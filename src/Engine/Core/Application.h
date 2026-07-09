@@ -17,6 +17,7 @@ namespace TinyTactics
         uint32_t width = 1280;
         uint32_t height = 720;
         bool enableVSync = true;
+        float autoCloseSeconds = 0.0F;
     };
 
     // Engine entry object.

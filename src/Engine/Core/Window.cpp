@@ -67,7 +67,7 @@ namespace TinyTactics
 
         // Flow: native GLFW window -> current OpenGL context -> GLAD function loading.
         glfwMakeContextCurrent(m_Handle);
-        glfwSetWindowUserPointer(m_Handle, &m_Specification);
+        glfwSetWindowUserPointer(m_Handle, this);
 
         if (!s_GLADInitialized)
         {
@@ -84,9 +84,9 @@ namespace TinyTactics
         // Resize callback keeps engine window size and OpenGL viewport in sync.
         glfwSetFramebufferSizeCallback(m_Handle, [](GLFWwindow* window, int width, int height)
         {
-            auto* specification = static_cast<WindowSpecification*>(glfwGetWindowUserPointer(window));
-            specification->width = static_cast<uint32_t>(width);
-            specification->height = static_cast<uint32_t>(height);
+            auto* engineWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+            engineWindow->m_Specification.width = static_cast<uint32_t>(width);
+            engineWindow->m_Specification.height = static_cast<uint32_t>(height);
             glViewport(0, 0, width, height);
         });
 
@@ -100,12 +100,17 @@ namespace TinyTactics
             return;
         }
 
+        // Flow: Window shutdown -> detach GLFW callbacks/user data before native destruction.
+        glfwSetFramebufferSizeCallback(m_Handle, nullptr);
+        glfwSetWindowUserPointer(m_Handle, nullptr);
+        glfwMakeContextCurrent(m_Handle);
         glfwDestroyWindow(m_Handle);
         m_Handle = nullptr;
 
         --s_GLFWWindowCount;
         if (s_GLFWWindowCount == 0)
         {
+            glfwMakeContextCurrent(nullptr);
             s_GLADInitialized = false;
             glfwTerminate();
         }
@@ -114,8 +119,8 @@ namespace TinyTactics
     void Window::OnUpdate()
     {
         // Flow: Application::Run -> Window::OnUpdate -> OS events + backbuffer present.
-        glfwPollEvents();
         glfwSwapBuffers(m_Handle);
+        glfwPollEvents();
     }
 
     bool Window::ShouldClose() const

@@ -8,11 +8,18 @@ namespace TinyTactics
 {
     LayerStack::~LayerStack()
     {
-        // Flow: Application shutdown -> LayerStack destruction -> Layer::OnDetach.
-        for (auto& layer : m_Layers)
+        Clear();
+    }
+
+    void LayerStack::Clear()
+    {
+        // Flow: Application shutdown -> newest Layer::OnDetach first -> owned resources release.
+        for (auto iterator = m_Layers.rbegin(); iterator != m_Layers.rend(); ++iterator)
         {
-            layer->OnDetach();
+            (*iterator)->OnDetach();
         }
+
+        m_Layers.clear();
     }
 
     Layer& LayerStack::PushLayer(std::unique_ptr<Layer> layer)

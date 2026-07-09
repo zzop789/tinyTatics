@@ -1,15 +1,38 @@
 #include "Engine/Renderer/Shader.h"
 
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace TinyTactics
 {
+    namespace
+    {
+        std::string ReadOpenGLShaderLog(uint32_t shader, int logLength)
+        {
+            // Calls: OpenGL writes into caller-owned storage; keep one extra byte for driver terminators.
+            std::vector<char> log(static_cast<size_t>(logLength > 0 ? logLength : 1) + 1, '\0');
+            int writtenLength = 0;
+            glGetShaderInfoLog(shader, static_cast<int>(log.size()), &writtenLength, log.data());
+            return std::string(log.data(), static_cast<size_t>(writtenLength > 0 ? writtenLength : 0));
+        }
+
+        std::string ReadOpenGLProgramLog(uint32_t program, int logLength)
+        {
+            // Calls: OpenGL writes into caller-owned storage; keep one extra byte for driver terminators.
+            std::vector<char> log(static_cast<size_t>(logLength > 0 ? logLength : 1) + 1, '\0');
+            int writtenLength = 0;
+            glGetProgramInfoLog(program, static_cast<int>(log.size()), &writtenLength, log.data());
+            return std::string(log.data(), static_cast<size_t>(writtenLength > 0 ? writtenLength : 0));
+        }
+    }
+
     Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
     {
         const std::string vertexSource = ReadFile(vertexPath);
@@ -30,8 +53,7 @@ namespace TinyTactics
             int logLength = 0;
             glGetProgramiv(m_RendererID, GL_INFO_LOG_LENGTH, &logLength);
 
-            std::string log(static_cast<size_t>(logLength), '\0');
-            glGetProgramInfoLog(m_RendererID, logLength, nullptr, log.data());
+            const std::string log = ReadOpenGLProgramLog(m_RendererID, logLength);
 
             glDeleteShader(vertexShader);
             glDeleteShader(fragmentShader);
@@ -121,8 +143,7 @@ namespace TinyTactics
             int logLength = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
 
-            std::string log(static_cast<size_t>(logLength), '\0');
-            glGetShaderInfoLog(shader, logLength, nullptr, log.data());
+            const std::string log = ReadOpenGLShaderLog(shader, logLength);
 
             glDeleteShader(shader);
             throw std::runtime_error("Failed to compile shader '" + path + "':\n" + log);
@@ -140,7 +161,12 @@ namespace TinyTactics
     {
         if (m_RendererID != 0)
         {
-            glDeleteProgram(m_RendererID);
+            // Flow: Layer destruction -> Shader::Release -> OpenGL program delete while context is current.
+            if (glfwGetCurrentContext() != nullptr)
+            {
+                glDeleteProgram(m_RendererID);
+            }
+
             m_RendererID = 0;
         }
     }

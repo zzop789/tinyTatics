@@ -2,10 +2,29 @@
 #include "Sandbox/Layers/baseLayer.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <memory>
 
-int main()
+namespace
+{
+    float ReadAutoCloseArgument(int argc, char** argv)
+    {
+        constexpr const char* prefix = "--auto-close=";
+
+        for (int index = 1; index < argc; ++index)
+        {
+            if (std::strncmp(argv[index], prefix, std::strlen(prefix)) == 0)
+            {
+                return static_cast<float>(std::atof(argv[index] + std::strlen(prefix)));
+            }
+        }
+
+        return 0.0F;
+    }
+}
+
+int main(int argc, char** argv)
 {
     try
     {
@@ -15,6 +34,7 @@ int main()
             1280,
             720,
             true,
+            ReadAutoCloseArgument(argc, argv),
         });
 
         // Flow: Sandbox layer creation -> Application -> LayerStack ownership.

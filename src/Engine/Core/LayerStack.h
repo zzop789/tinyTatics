@@ -25,6 +25,9 @@ namespace TinyTactics
         // Removes a layer by borrowed address; ownership remains inside LayerStack until erase.
         void PopLayer(const Layer* layer);
 
+        // Flow: Application shutdown -> LayerStack::Clear -> Layer::OnDetach + destruction.
+        void Clear();
+
         using LayerContainer = std::vector<std::unique_ptr<Layer>>;
         using Iterator = LayerContainer::iterator;
         using ConstIterator = LayerContainer::const_iterator;

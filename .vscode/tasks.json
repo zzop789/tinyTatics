@@ -4,15 +4,21 @@
     {
       "label": "CMake: configure",
       "type": "shell",
-      "command": "cmake",
+      "command": "${workspaceFolder}/scripts/cmake-msvc-env.cmd",
       "args": ["--preset", "default"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "problemMatcher": []
     },
     {
       "label": "CMake: build",
       "type": "shell",
-      "command": "cmake",
+      "command": "${workspaceFolder}/scripts/cmake-msvc-env.cmd",
       "args": ["--build", "--preset", "default"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "dependsOn": "CMake: configure",
       "group": {
         "kind": "build",

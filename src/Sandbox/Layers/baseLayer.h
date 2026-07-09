@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/core.h"
-
+#include <memory>
 namespace TinyTacticsSandbox
 {
     // Sandbox-side layer used to test the engine Application -> LayerStack path.
@@ -16,7 +16,13 @@ namespace TinyTacticsSandbox
         // Calls: LayerStack after the layer is owned by Application.
         void OnAttach() override;
 
+        // Calls: LayerStack before Application destroys the OpenGL window/context.
+        void OnDetach() override;
+
         // Calls: Application::Run once per frame with real frame timing.
         void OnUpdate(TinyTactics::TimeStep timestep) override;
+    private:
+        // Sandbox-specific resources for testing gameplay/rendering.
+        std::unique_ptr<TinyTactics::Shader> m_Shader;
     };
 }

@@ -24,7 +24,12 @@ namespace TinyTactics
         RenderCommand::SetClearColor(0.08F, 0.10F, 0.12F, 1.0F);
     }
 
-    Application::~Application() = default;
+    Application::~Application()
+    {
+        // Flow: Application shutdown -> Layers release GL resources -> Window destroys GL context.
+        m_LayerStack.Clear();
+        m_Window.reset();
+    }
 
     void Application::Run()
     {
@@ -36,6 +41,15 @@ namespace TinyTactics
                 currentFrameTime - m_StartTime);
             m_LastFrameTime = currentFrameTime;
             m_FPS = 1.0F / timestep.GetSeconds();
+
+            if (m_Specification.autoCloseSeconds > 0.0F
+                && timestep.GetElapsedSeconds() >= m_Specification.autoCloseSeconds)
+            {
+                // Flow: automated test run -> Application::Close -> normal shutdown path.
+                Close();
+                continue;
+            }
+
             // Flow: frame clock -> clear -> layers update/draw -> window presents frame.
             RenderCommand::Clear();
 

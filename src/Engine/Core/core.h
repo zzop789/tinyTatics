@@ -9,3 +9,4 @@
 #include "Engine/Core/TimeStep.h"
 #include "Engine/Core/Window.h"
 #include "Engine/Renderer/RenderCommand.h"
+#include "Engine/Renderer/Shader.h"
