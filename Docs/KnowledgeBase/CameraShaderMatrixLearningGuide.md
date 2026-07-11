@@ -181,3 +181,79 @@ gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 - 如果物体位置全部只能写在 `-1` 到 `1` 之间，说明还停留在裁剪空间测试阶段。
 - 如果相机移动后画面没有变化，检查 `u_ViewProjection` 是否每帧传给 shader。
 - 如果窗口比例变化后图形被拉伸，检查 `Camera2D::SetViewportSize(...)` 是否使用真实窗口尺寸。
+
+## 7. 修改 `SetPosition` 后矩形消失的原因
+
+当前 `BaseLayer::OnAttach()` 中的相机参数是：
+
+```cpp
+m_Camera.SetViewportSize(1280.0F, 720.0F);
+m_Camera.SetPosition({ 0.0F, 0.0F });
+m_Camera.SetZoom(1.0F);
+```
+
+`Camera2D::Recalculate()` 使用下面的可视范围：
+
+```text
+halfHeight = 1 / zoom
+halfWidth  = halfHeight * (viewportWidth / viewportHeight)
+```
+
+代入当前数值：
+
+```text
+halfHeight = 1
+halfWidth  = 1280 / 720 ≈ 1.78
+```
+
+因此相机位于 `(cameraX, cameraY)` 时，看到的世界范围约为：
+
+```text
+x: cameraX - 1.78 到 cameraX + 1.78
+y: cameraY - 1.00 到 cameraY + 1.00
+```
+
+彩色矩形固定在世界原点附近：
+
+```text
+x: -0.5 到 0.5
+y: -0.5 到 0.5
+```
+
+所以相机沿 x 方向移动超过约 `2.28`，或者沿 y 方向移动超过约 `1.5` 后，矩形会完全离开视野。这不是渲染失败，而是相机矩阵正确完成了裁剪。
+
+### 相机移动方向
+
+项目中的 View 矩阵使用：
+
+```cpp
+glm::translate(glm::mat4(1.0F), glm::vec3(-m_Position, 0.0F));
+```
+
+这里必须使用相机位置的负值：
+
+```text
+相机向右移动 -> 世界画面向左移动
+相机向上移动 -> 世界画面向下移动
+```
+
+例如把相机从 `(0, 0)` 设置成 `(1, 0)`，预期结果是矩形向屏幕左侧移动，而不是向右移动。
+
+### 设置位置与播放移动动画的区别
+
+在 `OnAttach()` 中调用一次 `SetPosition()`，只会在程序启动时瞬间设置最终位置。它不会生成移动过程。
+
+要观察连续移动，应该在每帧执行的 `OnUpdate(TimeStep timestep)` 中，根据帧间隔逐步修改位置。核心关系是：
+
+```text
+本帧移动距离 = 移动速度 * timestep.GetSeconds()
+新位置 = 旧位置 + 本帧移动距离
+```
+
+在还没有接入键盘事件前，可以先用很小的位置验证静态结果：
+
+```cpp
+m_Camera.SetPosition({ 0.5F, 0.0F });
+```
+
+此时矩形应明显向左移动，但仍然处于可视范围内。确认静态移动正确后，再把位置更新放进 `OnUpdate()`，才会看到连续的镜头移动。

@@ -13,7 +13,7 @@ namespace TinyTacticsSandbox
     {
         // Flow: Application startup -> LayerStack::PushLayer -> BaseLayer resource setup.
         m_Camera.SetViewportSize(1280.0F, 720.0F);
-        m_Camera.SetPosition({ 0.0F, 0.0F });
+        m_Camera.SetPosition({ 0.0F, 0.0F }); //max [-1,1] in both axes
         m_Camera.SetZoom(1.0F);
         const float vertices[] = {
             // position             // color
