@@ -10,3 +10,8 @@
 #include "Engine/Core/Window.h"
 #include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Renderer/Shader.h"
+#include "Engine/Renderer/VertexArray.h"
+#include "Engine/Renderer/VertexBuffer.h"
+#include "Engine/Renderer/IndexBuffer.h"
+#include "Engine/Renderer/BufferLayout.h"
+#include "Engine/Renderer/Camera2D.h"

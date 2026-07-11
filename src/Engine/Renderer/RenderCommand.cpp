@@ -1,5 +1,7 @@
 #include "Engine/Renderer/RenderCommand.h"
 
+#include "Engine/Renderer/VertexArray.h"
+
 #include <glad/gl.h>
 
 namespace TinyTactics
@@ -20,5 +22,12 @@ namespace TinyTactics
     void RenderCommand::Clear()
     {
         glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
+    {
+        vertexArray.Bind();
+        const auto& indexBuffer = vertexArray.GetIndexBuffer();
+        glDrawElements(GL_TRIANGLES, static_cast<int>(indexBuffer->GetCount()), GL_UNSIGNED_INT, nullptr);
     }
 }

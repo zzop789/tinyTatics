@@ -23,6 +23,8 @@ namespace TinyTacticsSandbox
         void OnUpdate(TinyTactics::TimeStep timestep) override;
     private:
         // Sandbox-specific resources for testing gameplay/rendering.
+        TinyTactics::Camera2D m_Camera;
         std::unique_ptr<TinyTactics::Shader> m_Shader;
+        std::shared_ptr<TinyTactics::VertexArray> m_VertexArray;
     };
 }
