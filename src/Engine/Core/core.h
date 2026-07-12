@@ -15,3 +15,5 @@
 #include "Engine/Renderer/IndexBuffer.h"
 #include "Engine/Renderer/BufferLayout.h"
 #include "Engine/Renderer/Camera2D.h"
+#include "Engine/Renderer/Renderer2D.h"
+#include "Engine/Renderer/Texture2D.h"

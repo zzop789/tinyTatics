@@ -21,14 +21,16 @@ namespace TinyTactics
         m_Window = Window::Create(windowSpecification);
 
         RenderCommand::Init();
+        Renderer2D::Init();
         RenderCommand::SetClearColor(0.08F, 0.10F, 0.12F, 1.0F);
     }
 
     Application::~Application()
     {
         // Flow: Application shutdown -> Layers release GL resources -> Window destroys GL context.
-        m_LayerStack.Clear();
-        m_Window.reset();
+        m_LayerStack.Clear(); //release all layers
+        Renderer2D::Shutdown();//release renderer resources
+        m_Window.reset(); //destroy window and its GL context
     }
 
     void Application::Run()

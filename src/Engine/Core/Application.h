@@ -3,6 +3,7 @@
 #include "Engine/Core/LayerStack.h"
 #include "Engine/Core/TimeStep.h"
 #include "Engine/Core/Window.h"
+#include "Engine/Renderer/Renderer2D.h"
 
 #include <chrono>
 #include <memory>

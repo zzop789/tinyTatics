@@ -24,7 +24,6 @@ namespace TinyTacticsSandbox
     private:
         // Sandbox-specific resources for testing gameplay/rendering.
         TinyTactics::Camera2D m_Camera;
-        std::unique_ptr<TinyTactics::Shader> m_Shader;
-        std::shared_ptr<TinyTactics::VertexArray> m_VertexArray;
+        std::unique_ptr<TinyTactics::Texture2D> m_Texture;
     };
 }
